@@ -15,7 +15,7 @@ export const PostValidation = z.object({
   location:z.string().min(2).max(100),
   file:z.custom(),
   tags:z.string(),
- mention:z.string()
+  mention:z.string()
 });
 
 export const CreateStoryValidation = z.object({
@@ -27,4 +27,5 @@ export const ProfileValidation = z.object({
     email: z.string().min(5,{message:"To Short"}),
      bio: z.string().min(0),
      file:z.custom(),
+     
   });

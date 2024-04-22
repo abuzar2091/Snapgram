@@ -1,6 +1,6 @@
 import { ID, Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
-
+import { v4 as uuidv4 } from "uuid";
 export async function createUserAccount(user) {
   console.log(user.email);
   console.log(user.username);
@@ -198,7 +198,7 @@ export async function createStory(post) {
 
 export async function deleteStory(user) {
   if (!user.story) return;
-  console.log("good m aa gya hu delete krne");
+  console.log("good m aa gya hu delete krne ok");
   const data = JSON.parse(user.story);
   try {
     const statusCode = await databases.updateDocument(
@@ -208,19 +208,98 @@ export async function deleteStory(user) {
       {
         story: "",
       }
-      );
-      
-      if (!statusCode) throw Error;
-      console.log("good  delete ho gya");
-      console.log(data.storyId);
-      
-      // const isDeleted = await deleteFile(data.storyId);
-      // if (!isDeleted) throw Error;
-      // console.log("deletefile");
+    );
+
+    if (!statusCode) throw Error;
+    console.log("good  delete ho gya ok ");
+    //console.log(data.storyId);
+
+    // const isDeleted = await deleteFile(data.storyId);
+    // if (!isDeleted) throw Error;
+    // console.log("deletefile");
     console.log(user);
     return { status: "Ok" };
   } catch (error) {
     console.log("something wrong during deleting post ", error);
+  }
+}
+
+export async function addStoryHighlight(post) {
+  if (!post.highlightUrl) return;
+  console.log("aa gya hu story hightlight add krne");
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      post.userId
+    );
+
+    const existingHighlights = user.highlights || [];
+    const newhighlight = {
+      highlightUrl: post.highlightUrl,
+      highlightTitle: post.highlightTitle,
+      createdAt: new Date(),
+    };
+    // const newpost = JSON.stringify(story);
+    const highlight = JSON.stringify(newhighlight);
+    const updatedHighlights = [...existingHighlights, highlight];
+
+    const addStory = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      post.userId,
+      {
+        // highlights:post.highlight,
+        highlights: updatedHighlights,
+      }
+    );
+    if (!addStory) throw Error;
+    console.log("story added to highlight successfully");
+    return addStory;
+  } catch (error) {
+    console.log(
+      "something happening wrong during to save the highlights ",
+      error
+    );
+  }
+}
+
+export async function saveTaggedUser(post) {
+  try {
+    console.log("aa gya");
+    const user = await getUserByUserName(post.username);
+    console.log(user);
+    console.log("mil gya");
+
+    // Fetch the current user document
+    const currentUser = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      user.$id
+    );
+    currentUser.taggedpost = currentUser.taggedpost || [];
+
+    // Modify the taggedpost array by pushing the new item
+    const newpost = JSON.stringify(post.tagpost);
+    currentUser.taggedpost.push(newpost);
+    // Modify the taggedpost array by pushing the new item
+    ///currentUser.taggedpost = [...currentUser.taggedpost, post.tagpost];
+    // const taggedpostString = JSON.stringify(currentUser.taggedpost);
+    // Update the entire user document
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      user.$id,
+      {
+        taggedpost: currentUser.taggedpost,
+      }
+    );
+
+    console.log(updatedUser);
+    return updatedUser;
+  } catch (error) {
+    console.log("I am getting an error in saveTaggedPost", error);
+    throw error;
   }
 }
 
@@ -284,45 +363,6 @@ export async function createPost(post) {
     console.log("something happening wrong during uploading post ", error);
   }
 }
-export async function saveTaggedUser(post) {
-  try {
-    console.log("aa gya");
-    const user = await getUserByUserName(post.username);
-    console.log(user);
-    console.log("mil gya");
-
-    // Fetch the current user document
-    const currentUser = await databases.getDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      user.$id
-    );
-    currentUser.taggedpost = currentUser.taggedpost || [];
-
-    // Modify the taggedpost array by pushing the new item
-    const newpost = JSON.stringify(post.tagpost);
-    currentUser.taggedpost.push(newpost);
-    // Modify the taggedpost array by pushing the new item
-    ///currentUser.taggedpost = [...currentUser.taggedpost, post.tagpost];
-    // const taggedpostString = JSON.stringify(currentUser.taggedpost);
-    // Update the entire user document
-    const updatedUser = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      user.$id,
-      {
-        taggedpost: currentUser.taggedpost,
-      }
-    );
-
-    console.log(updatedUser);
-    return updatedUser;
-  } catch (error) {
-    console.log("I am getting an error in saveTaggedPost", error);
-    throw error;
-  }
-}
-
 export async function uploadFile(file) {
   try {
     const uploadedFile = await storage.createFile(
@@ -427,6 +467,176 @@ export async function saveComment(post) {
   }
 }
 
+export async function submitChat(chats) {
+  if (!chats.chatMsg) return;
+  // console.log(chats.currUserId);
+  // console.log(chats.roomUserId);
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      chats.currUserId
+    );
+    const roomObj = user?.chattingroom?.find((object) => {
+      const data = JSON.parse(object);
+      return data?.userId === chats.roomUserId && data?.roomId;
+    });
+    const roomId = roomObj ? JSON.parse(roomObj).roomId : null;
+    console.log(roomObj);
+
+    console.log(roomId);
+    const msg = {
+      chatId: uuidv4(),
+      chat: chats.chatMsg,
+      createdAt: new Date(),
+      creator: chats.currUserId,
+    };
+    const newmsg = JSON.stringify(msg);
+    console.log(newmsg);
+
+    if (!roomId) {
+      const userdetail = `${chats.currUserId}_${chats.roomUserId}`;
+
+      const doChat = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.chatCollectionId,
+        ID.unique(),
+        {
+          chats: [newmsg],
+          users: userdetail,
+        }
+      );
+      if (!doChat) throw Error;
+      const detail = {
+        roomId: doChat.$id,
+        userId: chats.roomUserId,
+      };
+      const details = JSON.stringify(detail);
+      const exitingchattingroom = user?.chattingroom || [];
+
+      const newEntryCurr = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        chats.currUserId,
+        {
+          chattingroom: [details, ...exitingchattingroom],
+        }
+      );
+      const detail2 = {
+        roomId: doChat.$id,
+        userId: chats.currUserId,
+      };
+      const details2 = JSON.stringify(detail2);
+      const roomuser = await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        chats.roomUserId
+      );
+
+      const newEntryRoom = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        chats.roomUserId,
+        {
+          chattingroom: [details2, ...roomuser?.chattingroom],
+        }
+      );
+      if (!newEntryCurr && !newEntryRoom) throw Error;
+
+      return doChat;
+    } else {
+      const existingdata = await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.chatCollectionId,
+        roomId
+      );
+      const existingChatting = existingdata?.chats || [];
+      const updatedChatting = [newmsg, ...existingChatting];
+      const chatting = await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.chatCollectionId,
+        roomId,
+        {
+          chats: updatedChatting,
+        }
+      );
+      if (!chatting) throw Error;
+      return chatting;
+    }
+  } catch (error) {
+    console.log("submitting chat ", error);
+  }
+}
+export async function deleteChatMsg(chats) {
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      chats.currUserId
+    );
+    const roomObj = user?.chattingroom?.find((object) => {
+      const data = JSON.parse(object);
+      return data?.userId === chats?.roomUserId && data?.roomId;
+    });
+    const roomId = roomObj ? JSON.parse(roomObj).roomId : null;
+
+    const isDeleted = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatCollectionId,
+      roomId,
+      {
+        chats: chats.chatting,
+      }
+    );
+    if (!isDeleted) throw Error;
+    console.log("deleted chats successfully");
+    return { status: "ok" };
+  } catch (error) {
+    console.log("error in deleting msg ", error);
+  }
+}
+export async function showChat(currUserId, roomUserId) {
+  if (!roomUserId || !currUserId) return;
+
+  const queries1 = `${currUserId}_${roomUserId}`;
+  const queries2 = `${roomUserId}_${currUserId}`;
+  try {
+    const roomChat = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatCollectionId,
+      [Query.equal("users", [queries1, queries2])]
+    );
+    console.log(roomChat);
+
+    if (roomChat.length === 0) {
+      throw new Error("No chat documents found.");
+    }
+    console.log("chats mili");
+    return roomChat;
+  } catch (error) {
+    console.log("wrong during getting chat ", error);
+  }
+}
+
+// to delete chatting rooom
+// export async function deletechattingroom(userId){
+//   try{
+//     const isEmpty=await databases.updateDocument(
+//       appwriteConfig.databaseId,
+//       appwriteConfig.userCollectionId,
+//       userId,
+//       {
+//         chattingroom:[]
+//       }
+//     )
+//     if(!isEmpty)throw Error;
+//     console.log("deleted chat room");
+
+//   }catch(error){
+//     console.log("not deleted ",error);
+//   }
+// }
+
 export async function savePost(postId, userId) {
   try {
     const updatedPost = await databases.createDocument(
@@ -505,6 +715,7 @@ export async function getPostById(postId) {
 
 export async function updatePost(post) {
   const hasFileToUpdate = post.file.length > 0;
+  console.log(post);
   // console.log(post.file[0]);
 
   try {
@@ -512,6 +723,7 @@ export async function updatePost(post) {
       imageUrl: post.imageUrl,
       imageId: post.imageId,
     };
+    const deletefileId = post.imageId;
 
     if (hasFileToUpdate) {
       // Upload new file to appwrite storage
@@ -519,12 +731,11 @@ export async function updatePost(post) {
       if (!uploadedFile) throw Error;
 
       // Get new file url
-      const fileUrl = getFilePreview(uploadedFile.$id);
+      const fileUrl = getFilePreview(uploadedFile.$id, post.file[0].type);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
         throw Error;
       }
-
       image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
     }
 
@@ -548,40 +759,45 @@ export async function updatePost(post) {
     // Failed to update
     if (!updatedPost) {
       // Delete new file that has been recently uploaded
-      if (hasFileToUpdate) {
-        await deleteFile(image.imageId);
-      }
-
-      // If no new file uploaded, just throw error
+      // if (hasFileToUpdate) {
+      await deleteFile(post.imageId);
       throw Error;
     }
 
-    // Safely delete old file after successful update
-    if (hasFileToUpdate) {
-      await deleteFile(post.imageId);
-    }
+    const isDeleted = await deleteFile(deletefileId);
+    if (!isDeleted) throw Error;
 
     return updatedPost;
+
+    // }
   } catch (error) {
     console.log(error);
   }
 }
 
 export async function updateProfile(user) {
-  // const hasFileToUpdate = user.file.length > 0;
-  //  console.log(user.file[0].path);
-  // const files = new Files();
-  // const imageUrl = user.file[0].$id
-  //   ? files.getFileDownload(user.file[0].$id)
-  //   : null;
+  const uploadedFile = await uploadFile(user.file[0]);
 
-  //  console.log(user.userId);
+  if (!uploadedFile) throw Error;
+
+  // Get file url
+  const fileUrl = getFilePreview(uploadedFile.$id, user.file[0].type);
+  // console.log("img url");
+  console.log(fileUrl);
+  // console.log({ fileUrl });
+  if (!fileUrl) {
+    await deleteFile(uploadedFile.$id);
+    throw Error;
+  }
+  const deletefileId = user.imageId;
+  const oldUrl = user.imageUrl;
   const filteredUse = {
     name: user.name,
     username: user.username,
     email: user.email,
     bio: user.bio,
-    imageUrl: user.imageUrl,
+    imageUrl: fileUrl,
+    imageId: uploadedFile.$id,
   };
   if (!user.userId) {
     console.error("User ID is missing. Cannot update profile.");
@@ -602,7 +818,10 @@ export async function updateProfile(user) {
       console.error("Failed to update profile");
       throw new Error("Failed to update profile");
     }
-
+    if (!oldUrl.includes("avators")) {
+      const isDeleted = await deleteFile(deletefileId);
+      if (!isDeleted) throw Error;
+    }
     console.log("Profile updated successfully");
     return updatedProfile;
   } catch (error) {
@@ -731,6 +950,23 @@ export async function searchPosts(searchTerm) {
     if (!posts) throw Error;
 
     return posts;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function searchUsers(searchTerm) {
+  try {
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      //appwriteConfig.postCollectionId,
+      appwriteConfig.userCollectionId,
+      [Query.search("name", searchTerm)]
+    );
+
+    if (!users) throw Error;
+
+    return users;
   } catch (error) {
     console.log(error);
   }

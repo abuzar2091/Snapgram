@@ -5,6 +5,7 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import {
+  addStoryHighlight,
   createPost,
   createStory,
   createUserAccount,
@@ -18,15 +19,17 @@ import {
   getPostById,
   getRecentPosts,
   getSavedPosts,
- 
   getUserByUserName,
   likePost,
   saveComment,
   savePost,
   saveTaggedUser,
   searchPosts,
+  searchUsers,
+  showChat,
   signInAccount,
   signOutAccount,
+  submitChat,
   updateFollowProfile,
   updatePost,
   updateProfile,
@@ -83,7 +86,18 @@ export const useCreateStory = () => {
 export const useDeleteStory = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (user) =>deleteStory(user),
+    mutationFn: (user) => deleteStory(user),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+    },
+  });
+};
+export const useAddStoryHighlight = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (post) => addStoryHighlight(post),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
@@ -124,6 +138,18 @@ export const useSaveComment = () => {
   });
 };
 
+export const useSubmitChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (chats) => submitChat(chats),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+
 export const useSaveTaggedUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -157,6 +183,12 @@ export const useGetSavedPosts = (userId) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
     queryFn: () => getSavedPosts(userId),
+  });
+};
+export const useGetChatting = (currUserId, roomUserId) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RECENT_CHATS],
+    queryFn: () => showChat(currUserId, roomUserId),
   });
 };
 
@@ -281,9 +313,17 @@ export const useGetPosts = () => {
 
 export const useSearchPosts = (searchTerm) => {
   return useQuery({
-   // queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
+    // queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
     queryKey: [QUERY_KEYS.GET_USERS, searchTerm],
     queryFn: () => searchPosts(searchTerm),
+    enabled: !!searchTerm,
+  });
+};
+export const useSearchUsers = (searchTerm) => {
+  return useQuery({
+    // queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
+    queryKey: [QUERY_KEYS.GET_USERS, searchTerm],
+    queryFn: () => searchUsers(searchTerm),
     enabled: !!searchTerm,
   });
 };

@@ -68,5 +68,4 @@ function CommentSection({ postId, post: initialpost }) {
     </div>
   );
 }
-
 export default CommentSection;

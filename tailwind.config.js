@@ -133,7 +133,7 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        slider: "slider 5s linear",
+        slider: "slider 6s linear",
       },
     },
   },

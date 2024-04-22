@@ -8,6 +8,8 @@ import {
 } from "@/lib/react-query/queriesAndMutation";
 import { useInView } from "react-intersection-observer";
 import CreateStory from "@/components/shared/CreateStory";
+import RenderStory from "@/components/shared/RenderStory";
+
 
 //i also did use the infinite scrolling functionality in the home page
 
@@ -17,6 +19,7 @@ function Home() {
   //   isPending: isPostLoading,
   //   isError: isErrorPost,
   // } = useGetRecentPosts();
+
 
   const { ref, inView } = useInView();
   const {
@@ -32,10 +35,17 @@ function Home() {
       fetchNextPage();
     }
   }, [inView]);
+  console.log(new Date());
 
   return (
     <div className="flex flex-col mt-8">
-      <CreateStory className="max-w-30" />
+      <div className="flex items-center gap-3">
+        <div className="w-30">
+          <CreateStory className="max-w-30 relative" />
+        </div>
+        <RenderStory className="" />
+      </div>
+
       <div className="home-container">
         <div className="home-posts">
           <h2 className="h3-bold md:h2-bold text-left max-w-full">Feed</h2>

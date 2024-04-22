@@ -24,7 +24,7 @@ function LeftSidebar() {
 
   const { data: users } = useGetCurrentUser();
   // console.log(user);
-  console.log(user?.id);
+  // console.log(user?.id);
 
   return (
     <nav className="leftsidebar">
@@ -81,12 +81,23 @@ function LeftSidebar() {
       </div>
       <Button
         variant="ghost"
-        className="shad-button_ghost"
+        className="shad-button_ghost mt-4"
         onClick={handleSignOut}
       >
         <img src="/assets/icons/logout.svg" alt="logout" />
         <p className="small-medium lg:base-medium">Logout</p>
       </Button>
+      <Link to={"/settings"}>
+        <div className="flex gap-4 ml-4 mt-2 cursor-pointer">
+          <img
+            src="/assets/icons/settings.svg"
+            alt="setting"
+            className=" bg-white rounded-lg "
+            variant="ghost"
+          />
+          <p className="small-medium lg:base-medium">Settings</p>
+        </div>
+      </Link>
     </nav>
   );
 }

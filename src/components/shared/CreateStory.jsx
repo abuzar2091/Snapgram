@@ -87,12 +87,13 @@ function CreateStory() {
   const [showImg, setShowImg] = useState(false);
   const { toast } = useToast();
   const { data: user } = useGetCurrentUser();
+
   const navigate = useNavigate();
   useEffect(() => {}, []);
   //const isLoadingUpdate = false;
   const { mutateAsync: createStory, isPending: isLoadingStory } =
     useCreateStory();
-  const { mutateAsync: deleteStory, isPending: isLoading } = useDeleteStory();
+
   //const { mutateAsync: updateProfile, isPending: isLoadingUpdate } =  useUpdateProfile();
   const handleSubmit = () => {
     setShowImg(true);
@@ -117,44 +118,82 @@ function CreateStory() {
     //console.log(user.story.length);
     return navigate("/");
   }
+  // storydelete &&
+  // (() => {
+  //   const deletedStory = async () => {
+  //     try {
+  //       console.log("story deletion called first time");
+  //       const isDeleted = await deleteStory(user);
+  //       if (!isDeleted) {
+  //         toast({ title: "Please try again, error in deleting beta" });
+  //       } else {
+  //         console.log("story Deleted successfully wow");
+  //       }
+  //     } catch (error) {
+  //       console.error("An error occurred while deleting the story", error);
+  //       //toast({ title: "An error occurred while deleting the story" });
+  //     } finally {
+  //       setStoryDelete(false); // Reset the state in any case (success or error)
+  //     }
+  //   };
+  //   deletedStory();
+  // })();
 
-  useEffect(() => {
-    const deletedStory = async () => {
-      try {
-        const isDeleted = await deleteStory(user);
-        if (!isDeleted) {
-          toast({ title: "Please try again, error in deleting beta" });
-        } else {
-          console.log("Deleted successfully wow");
-        }
-      } catch (error) {
-        console.error("An error occurred while deleting the story", error);
-        //toast({ title: "An error occurred while deleting the story" });
-      } finally {
-        setStoryDelete(false); // Reset the state in any case (success or error)
-      }
-    };
+  // useEffect(() => {
 
-    deletedStory();
-  }, [storydelete]);
+  //   deletedStory();
+  // }, []);
 
   console.log(user);
   const data = user?.story ? JSON.parse(user?.story) : "";
-  console.log("set delete ", storydelete);
-  console.log(data);
+  const creationTime = new Date(data.createdAt);
+  const currentTime = new Date();
+
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentTime - creationTime;
+  // console.log("set delete ", storydelete);
+  // console.log(data);
+  const { mutateAsync: deleteStory, isPending: isLoading } = useDeleteStory();
 
   return (
     <>
       {data?.storyImg?.length > 0 ? (
-        <StoryShow
-          postImg={data?.storyImg}
-          userImg={user.imageUrl}
-          storydelete={storydelete}
-          setStoryDelete={setStoryDelete}
-        />
+        timeDifference < 1440 * 60 * 1000 ? (
+          <StoryShow
+            postImg={data?.storyImg}
+            userImg={user.imageUrl}
+            user={user}
+            setStoryDelete={setStoryDelete}
+            username={user.username}
+            createdAt={data.createdAt}
+          />
+        ) : (
+          (() => {
+            const storydeleted = async () => {
+              try {
+                // Your deletion logic here
+                console.log("story deletion called first time");
+                const isDeleted = await deleteStory(user);
+                if (!isDeleted) {
+                  toast({ title: "Please try again, error in deleting beta" });
+                } else {
+                  console.log("story Deleted successfully wow");
+                }
+              } catch (error) {
+                console.error(
+                  "An error occurred while deleting the story",
+                  error
+                );
+                //toast({ title: "An error occurred while deleting the story" });
+              }
+              // refetch();
+            };
+            storydeleted();
+          })()
+        )
       ) : (
         <Form {...form}>
-          <div className="max-w-24 pl-0">
+          <div className="max-w-24 relative pl-0">
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               //className="flex flex-col gap-2 w-full mt-1"
@@ -174,6 +213,7 @@ function CreateStory() {
                         showImg={showImg}
                         isLoadingStory={isLoadingStory}
                         storydelete={storydelete}
+                        user={user}
                       />
                     </FormControl>
                     <FormMessage className="" />
@@ -184,7 +224,7 @@ function CreateStory() {
               {showButton && (
                 <Button
                   type="submit"
-                  className={`bg-primary-500 absolute mt-[198px] ml-36 ${
+                  className={`bg-primary-500 absolute mt-[274px] px-8 ml-24 ${
                     showImg ? "hidden" : ""
                   }`}
                   onClick={handleSubmit}
@@ -202,53 +242,6 @@ function CreateStory() {
           </div>
         </Form>
       )}
-      {/* <Form {...form}>
-        <div className="max-w-24 pl-0">
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            //className="flex flex-col gap-2 w-full mt-1"
-          >
-            <FormField
-              control={form.control}
-              name="file"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className=""></FormLabel>
-                  <FormControl>
-                    <StoryForm
-                      fieldChange={field.onChange}
-                      mediaUrl={user?.imageUrl}
-                      showButton={showButton}
-                      setShowButton={setShowButton}
-                      showImg={showImg}
-                      isLoadingStory={isLoadingStory}
-                    />
-                  </FormControl>
-                  <FormMessage className="" />
-                </FormItem>
-              )}
-            />
-            {console.log(showButton)}
-            {showButton && (
-              <Button
-                type="submit"
-                className={`bg-primary-500 absolute mt-[198px] ml-36 ${
-                  showImg ? "hidden" : ""
-                }`}
-                onClick={handleSubmit}
-              >
-                {isLoadingStory
-                  ? ""
-                  : // <img src={user?.imageUrl} className="h-16 w-16 rounded-full" />
-                    // <div className="flex-center gap-2">
-                    //   <Loader /> Loading...
-                    // </div>
-                    "Your Story"}
-              </Button>
-            )}
-          </form>
-        </div>
-      </Form> */}
     </>
   );
 }

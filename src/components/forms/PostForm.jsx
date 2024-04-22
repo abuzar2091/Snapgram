@@ -66,8 +66,8 @@ function PostForm({ post, action }) {
       file: [],
       location: post ? post?.location : "",
       tags: post ? post?.tags.join(",") : "",
-     mention: post ? post?.mention?.join(",") : "",
-      //mention:""
+      // mention: post ? post?.mention?.join(",") : "",
+      mention:""
     },
   });
 
@@ -208,6 +208,9 @@ function PostForm({ post, action }) {
             </FormItem>
           )}
         />
+        {
+           action === "Create" &&
+        
         <FormField
           control={form.control}
           name="mention"
@@ -228,7 +231,7 @@ function PostForm({ post, action }) {
             </FormItem>
           )}
         />
-
+          }
         <div className="flex gap-4 items-center justify-end">
           <Button
             type="button"
@@ -244,7 +247,7 @@ function PostForm({ post, action }) {
             className="shad-button_primary whitespace-nowrap"
             disabled={isLoadingCreate || isLoadingUpdate}
           >
-            {isLoadingCreate || isLoadingUpdate && "Loading..."}
+            {isLoadingCreate || (isLoadingUpdate && "Loading...")}
             {action} post
           </Button>
         </div>

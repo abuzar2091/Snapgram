@@ -41,6 +41,7 @@ function ProfileUpdateFrom(post) {
       email: user ? user?.email : "",
       bio: user?.bio ? user.bio : "",
       file: [],
+     
     },
   });
 

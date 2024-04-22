@@ -7,6 +7,7 @@ export const QUERY_KEYS = {
     GET_USERS: "getUsers",
     GET_USER_BY_ID: "getUserById",
     GET_USER_BY_USERNAME: "getUserByUsername",
+    GET_RECENT_CHATS:"getRecentChats",
   
     // POST KEYS
     GET_POSTS: "getPosts",

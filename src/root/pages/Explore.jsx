@@ -33,6 +33,7 @@ function Explore({isPost=true}) {
       </div>
     );
   }
+  // console.log(posts);
   const shouldShowSearchResults = searchValue !== "";
   const shouldShowPosts =
     !shouldShowSearchResults &&
@@ -87,13 +88,7 @@ function Explore({isPost=true}) {
         ) : (
           posts.pages.map((item, index) => (
             // console.log(posts.pages)
-          
-            
-              
-
                 <GridPostList key={`page-${index}`} posts={item.documents} isPosts={isPost} />
-         
-            
             
           ))
         )}

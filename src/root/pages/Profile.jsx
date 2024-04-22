@@ -82,8 +82,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import UserPost from "./UserPost";
 import { Button } from "@/components/ui/button";
+import Highlights from "@/components/shared/Highlights";
 
-function Profile({ isPost = true ,tagged=true }) {
+function Profile({ isPost = true, tagged = true }) {
   // const { user } = useUserContext();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowers, setIsFollowers] = useState(false);
@@ -194,10 +195,11 @@ function Profile({ isPost = true ,tagged=true }) {
                           ? "Follow Back"
                           : "Follow"}
                       </Button>
-
+                   <Link to={`/chats/${id}`}>
                       <Button type="submit" className="bg-white text-gray-700">
                         Message
                       </Button>
+                   </Link>
                     </div>
                   )
                 )}
@@ -225,6 +227,14 @@ function Profile({ isPost = true ,tagged=true }) {
         )}
       </div>
       <div>
+
+        {
+          users?.highlights?.length>0 &&
+        <div className="highlights w-full h-20 flex gap-4 ml-16 mt-8">
+          <Highlights user={users} />
+        </div>
+        
+}
         <div className="flex gap-24 mt-12 ml-20">
           <div className="">
             <Link
@@ -270,10 +280,7 @@ function Profile({ isPost = true ,tagged=true }) {
             )}
           </div>
         </div>
-        {
-          tagged &&
-      <UserPost user={users}  isPosts={isPost} />
-        }
+        {tagged && <UserPost user={users} isPosts={isPost} />}
       </div>
     </div>
   );

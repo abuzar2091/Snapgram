@@ -20,6 +20,10 @@ import { Toaster } from "@/components/ui/toaster";
 import UserReels from "./root/pages/UserReels";
 import TaggedPost from "./root/pages/TaggedPost";
 import Reels from "./root/pages/Reels";
+import AllChats from "./root/pages/AllChats";
+import RoomChating from "./root/pages/RoomChating";
+import ChatLayout from "./root/pages/ChatLayout";
+import Settings from "./components/shared/Settings";
 
 function App() {
   return (
@@ -33,9 +37,13 @@ function App() {
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/reels" element={<Reels />} />
-
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-users" element={<AllUsers />} />
+          <Route path="/chats" element={<ChatLayout/>}>
+          <Route path="/chats/:id" element={<RoomChating/>} />
+          </Route>
+          
+          <Route path="/settings" element={<Settings/>}/>
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/update-post/:id" element={<EditPost />} />
           <Route path="/posts/:id" element={<PostDetails />} />
