@@ -38,3 +38,9 @@ This command will start the development server and enable you to begin interacti
 # Contributing:
 Contributions to Snapgram are welcome! Feel free to submit pull requests or raise issues for any improvements or features you'd like to see added.
 
+# ScreenShots
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+![alt text](image-4.png)
